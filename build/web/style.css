@@ -411,12 +411,7 @@ input {
     left: calc(100% + var(--submenu-padding));
 }
 
-.input-box {
-/*    display: flex;
-    align-items: center;
-    align-items: center;
-    overflow: hidden;*/
-}
+
 
 .input-box .search-icon,
 .input-box .search-input input {
