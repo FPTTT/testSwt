@@ -18,31 +18,42 @@ import java.util.Vector;
 public class DAOAccount extends DBConnect {
     //hien thi ban hang
     public Vector<Account> getAllAccount() {
-        String sql = "SELECT * FROM accounts WHERE 1=1";
-        Vector<Account> list = new Vector<>();
+    String sql = "SELECT * FROM accounts WHERE 1=1";
+    Vector<Account> list = new Vector<>();
+    
+    try (PreparedStatement st = connection.prepareStatement(sql);
+         ResultSet rs = st.executeQuery()) {
+
+        while (rs.next()) {
+            Account cus = new Account(
+                    rs.getInt("account_id"), 
+                    rs.getString("first_name"),
+                    rs.getString("last_name"),
+                    rs.getString("phone"),
+                    rs.getString("email"),
+                    rs.getString("password"),
+                    rs.getString("account_image"),
+                    rs.getString("address"),
+                    rs.getBoolean("is_admin"),
+                    rs.getBoolean("active")
+            );
+            list.add(cus);
+        }
+    } catch (SQLException e) {
+        System.out.println(e);
+    } finally {
         try {
-            PreparedStatement st = connection.prepareStatement(sql);
-            ResultSet rs = st.executeQuery();
-            while (rs.next()) {
-                Account cus = new Account(
-                        rs.getInt("account_id"), 
-                        rs.getString("first_name"),
-                        rs.getString("last_name"),
-                        rs.getString("phone"),
-                        rs.getString("email"),
-                        rs.getString("password"),
-                        rs.getString("account_image"),
-                        rs.getString("address"),
-                        rs.getBoolean("is_admin"),
-                        rs.getBoolean("active")
-                );
-                list.add(cus);
+            if (connection != null) {
+                connection.close();
             }
         } catch (SQLException e) {
             System.out.println(e);
         }
-        return list;
     }
+
+    return list;
+}
+
     
     public Account getAccountById(int id) {
         String sql = "SELECT * FROM accounts WHERE account_id = ?";
