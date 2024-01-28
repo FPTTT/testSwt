@@ -4,21 +4,24 @@
  */
 package controller;
 
-import dal.CustomerDAO;
+import dal.ProductDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import model.Customer;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.util.List;
+import model.Cart;
+import model.Item;
+import model.Product;
 
 /**
  *
  * @author Admin
  */
-public class loginServlet extends HttpServlet {
+public class BuyServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -37,10 +40,10 @@ public class loginServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet loginServlet</title>");
+            out.println("<title>Servlet BuyServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet loginServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet BuyServlet at 123" + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -58,7 +61,6 @@ public class loginServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher("login.jsp").forward(request, response);
 
     }
 
@@ -73,19 +75,34 @@ public class loginServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String u = request.getParameter("txtUsername");
-        String p = request.getParameter("txtPassword");
-
-        Customer c = new CustomerDAO().getAccount(u, p);
-        if (c == null) {
-            String er = "Username: " + u + "and password is existed!!!";
-            request.setAttribute("error", er);
-            request.getRequestDispatcher("login.jsp").forward(request, response);
+        HttpSession session = request.getSession();
+        Cart cart = null;
+        Object o = session.getAttribute("cart");
+        if (o != null) {
+            cart = (Cart) o;
         } else {
-            HttpSession session = request.getSession();
-            session.setAttribute("account", c);
-            request.getRequestDispatcher("MyEShop.jsp").forward(request, response);
+            cart = new Cart();
         }
+        
+        String id_raw = request.getParameter("id");
+        int id, num;
+        try {
+            id = Integer.parseInt(id_raw);
+            num = 1;
+            Product p = new ProductDAO().getProdctById(id);
+            double price = p.getPrice() * 1.2;
+            Item t = new Item(p, num, price);
+            cart.addItem(t);
+
+        } catch (NumberFormatException e) {
+            num = 1;
+        }
+        List<Item> list = cart.getItems();
+        
+        session.setAttribute("size", list.size());
+        session.setAttribute("cart", cart);
+
+        request.getRequestDispatcher("MyEShop.jsp").forward(request, response);
     }
 
     /**
